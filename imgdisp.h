@@ -15,6 +15,7 @@ public:
 
 protected:
     void mousePressEvent(QMouseEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
 
 };
 

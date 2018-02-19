@@ -39,6 +39,7 @@ public:
     void show_pixel_node();
     void show_cost_graph();
     void show_path_tree();
+    void show_min_path(int, int);
     int h();
     int hs();
     int w();
@@ -48,7 +49,7 @@ public:
     void get_pixel_node();
     void get_cost_graph();
     void get_path_tree(int, int);
-    void get_seed_pos(int, int);
+    cv::Point get_raw_pos(int, int);
 };
 
 extern Image *image;

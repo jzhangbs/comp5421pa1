@@ -40,17 +40,21 @@ void Image::open(const std::string & filename) {
 void Image::show_img() {
     if (!has_data) return;
     mode = IMG;
-    QPixmap pixmap = QPixmap::fromImage(
-                QImage(img.data,
-                       img.cols,
-                       img.rows,
-                       img.step,
-                       QImage::Format_RGB888));
+    cv::Mat img_draw;
     if (scale != 1.) {
-        pixmap = pixmap.scaledToHeight(
-                    int(scale * img.rows),
-                    Qt::SmoothTransformation);
+        cv::resize(img, img_draw,
+                   cv::Size(int(scale*w()), int(scale*h())),
+                   scale, scale, cv::INTER_CUBIC);
     }
+    else {
+        img_draw = img;
+    }
+    QPixmap pixmap = QPixmap::fromImage(
+                QImage(img_draw.data,
+                       img_draw.cols,
+                       img_draw.rows,
+                       img_draw.step,
+                       QImage::Format_RGB888));
     label->setPixmap(pixmap);
 }
 
@@ -86,6 +90,72 @@ void Image::show_path_tree() {
                        path_tree.cols,
                        path_tree.rows,
                        path_tree.step,
+                       QImage::Format_RGB888));
+    label->setPixmap(pixmap);
+}
+
+void Image::show_min_path(int x, int y) {
+    if (!has_data || !has_seed) return;
+
+    int dx[] = {-1, -1, 0, 1, 1, 1, 0, -1};
+    int dy[] = {0, 1, 1, 1, 0, -1, -1, -1};
+
+    cv::Point ptmp = get_raw_pos(x, y);
+    x = ptmp.x;
+    y = ptmp.y;
+
+    cv::Mat img_draw;
+    switch (mode) {
+    case IMG:
+        cv::resize(img, img_draw,
+                   cv::Size(int(scale*w()), int(scale*h())),
+                   scale, scale, cv::INTER_CUBIC);
+        break;
+    case PIX:
+        img_draw = pixel_node.clone(); break;
+    case COST:
+        img_draw = cost_graph.clone(); break;
+    case PATH:
+        img_draw = path_tree.clone(); break;
+    }
+    int curr_x = x;
+    int curr_y = y;
+    int next_x, next_y;
+    int curr_x_s, curr_y_s, next_x_s, next_y_s;
+    while (curr_x != seed_x && curr_y != seed_y) {
+        next_x = curr_x + dx[pred[I2(curr_x, curr_y)]];
+        next_y = curr_y + dy[pred[I2(curr_x, curr_y)]];
+
+        if (mode == PATH ||
+                mode == PIX ||
+                mode == COST) {
+            curr_x_s = curr_x * 3 + 1;
+            curr_y_s = curr_y * 3 + 1;
+            next_x_s = next_x * 3 + 1;
+            next_y_s = next_y * 3 + 1;
+        }
+        else if (mode == IMG) {
+            curr_x_s = int(curr_x * scale);
+            curr_y_s = int(curr_y * scale);
+            next_x_s = int(next_x * scale);
+            next_y_s = int(next_y * scale);
+        }
+
+        cv::line(img_draw,
+                 cv::Point(curr_y_s, curr_x_s),
+                 cv::Point(next_y_s, next_x_s),
+                 cv::Scalar(255, 0, 0),
+                 5);
+
+        curr_x = next_x;
+        curr_y = next_y;
+    }
+
+    QPixmap pixmap = QPixmap::fromImage(
+                QImage(img_draw.data,
+                       img_draw.cols,
+                       img_draw.rows,
+                       img_draw.step,
                        QImage::Format_RGB888));
     label->setPixmap(pixmap);
 }
@@ -179,18 +249,20 @@ void Image::get_cost_graph() {
             }
 }
 
-void Image::get_seed_pos(int x, int y) {
+cv::Point Image::get_raw_pos(int x, int y) {
+    cv::Point p;
     if (mode == IMG) {
-        seed_x = int(x/scale);
-        seed_y = int(y/scale);
+        p.x = int(x/scale);
+        p.y = int(y/scale);
     }
     else if (mode == PIX ||
              mode == COST ||
              mode == PATH) {
-        seed_x = x/3;
-        seed_y = y/3;
+        p.x = x/3;
+        p.y = y/3;
     }
-    qDebug("%d %d raw", seed_x, seed_y);
+//    qDebug("%d %d raw", p.x, p.y);
+    return p;
 }
 
 void Image::get_path_tree(int x, int y) {
@@ -200,7 +272,10 @@ void Image::get_path_tree(int x, int y) {
     if (pred != nullptr) delete[] pred;
     pred = new int[h()*w()];
 
-    get_seed_pos(x, y);
+    cv::Point ptmp = get_raw_pos(x, y);
+    seed_x = ptmp.x;
+    seed_y = ptmp.y;
+
     shortest(adj, h(), w(), seed_x, seed_y, pred);
 
     path_tree = cv::Mat::zeros(3*h(), 3*w(), CV_8UC3);
@@ -211,4 +286,7 @@ void Image::get_path_tree(int x, int y) {
             int p = pred[I2(i, j)];
             path_tree.ptr<uchar>(3*i+1+dx[p], 3*j+1+dy[p])[1] = 255;
         }
+
+    if (mode == PATH)
+        show_path_tree();
 }
