@@ -2,14 +2,14 @@
 
 using namespace std;
 
-#include "mex.h"
+//#include "mex.h"
 #include "fibheap.h"
 
 #define INF 0x7fffffff
 #define INITIAL  0
 #define ACTIVE   1
 #define EXPANDED 2
-#define I3(x, y, z) ((x)*w+(y)*8+(z))
+#define I3(x, y, z) ((x)*w*8+(y)*8+(z))
 #define I2(x, y) ((x)*w+(y))
 
 int dx[] = {-1, -1, 0, 1, 1, 1, 0, -1};
@@ -52,18 +52,18 @@ public:
     virtual int  operator <(FibHeapNode& RHS);
 
     virtual void operator =(Pixel NewKeyVal);
-    virtual void Print();
+//    virtual void Print();
     Pixel GetKeyValue() { return key; };
     void SetKeyValue(Pixel inkey) { key = inkey; };
 
 };
-
+/*
 void HeapNode::Print()
 {
     FibHeapNode::Print();
-    // cout << key.cost;
-    mexPrintf("%d,%d,%f", key.x, key.y, key.cost);
-}
+     cout << key.cost;
+//    mexPrintf("%d,%d,%f", key.x, key.y, key.cost);
+}*/
 
 void HeapNode::operator =(Pixel newKeyVal)
 {
@@ -134,7 +134,7 @@ void shortest(double adj[], int h, int w, int seed_x, int seed_y, int pred[]) {
     }
     delete[] node;
 }
-
+/*
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     int h = (int) mxGetScalar(prhs[0]);
     int w = (int) mxGetScalar(prhs[1]);
@@ -149,4 +149,4 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     int *out = (int*) mxGetData(plhs[0]);
     shortest(adj, h, w, seed_x, seed_y, out);
     // mexPrintf("%d %d %d %d %d", out[0], out[1], out[2], out[3], out[4]);
-}
+}*/

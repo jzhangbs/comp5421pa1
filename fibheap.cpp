@@ -52,7 +52,7 @@
 using namespace std;
 
 #include "fibheap.h"
-#include "mex.h"
+//#include "mex.h"
 
 #define kbhit() 0
 #define getch() 0
@@ -158,12 +158,12 @@ int X;
 // Print()
 //=========================================================
 
-void FibHeapNode::Print()
+/*void FibHeapNode::Print()
 {
     if (NegInfinityFlag)
-	   // cout << "-inf.";
-        mexPrintf("-inf.");
-}
+        cout << "-inf.";
+//        mexPrintf("-inf.");
+}*/
 
 //***************************************************************************
 //===========================================================================
@@ -450,7 +450,7 @@ int Result;
 // child list.   
 //========================================================================
 
-void FibHeap::Print(FibHeapNode *Tree, FibHeapNode *theParent)
+/*void FibHeap::Print(FibHeapNode *Tree, FibHeapNode *theParent)
 {
 FibHeapNode* Temp = NULL;
 
@@ -498,7 +498,7 @@ FibHeapNode* Temp = NULL;
 	 // cout << "Done Printing.  Hit a key.\n";
   //        cin >> ch;
   //    }
-}
+}*/
 
 //===========================================================================
 //===========================================================================

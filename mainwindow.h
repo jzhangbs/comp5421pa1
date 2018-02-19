@@ -16,15 +16,18 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    Image image;
-
 public slots:
     void openImg();
     void zoom_in();
     void zoom_out();
+    void pixel_node();
+    void cost_graph();
+    void path_tree();
 
 private:
     Ui::MainWindow *ui;
 };
+
+extern Image *image;
 
 #endif // MAINWINDOW_H

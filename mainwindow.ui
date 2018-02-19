@@ -6,37 +6,39 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>673</width>
-    <height>401</height>
+    <width>666</width>
+    <height>398</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>3</x>
-      <y>1</y>
-      <width>501</width>
-      <height>331</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-    </property>
-   </widget>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="ImgDisp" name="label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>673</width>
+     <width>666</width>
      <height>23</height>
     </rect>
    </property>
@@ -57,6 +59,10 @@
    </attribute>
    <addaction name="actionZoom_in"/>
    <addaction name="actionZoom_out"/>
+   <addaction name="separator"/>
+   <addaction name="actionPixel_node"/>
+   <addaction name="actionCost_graph"/>
+   <addaction name="actionPath_tree"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -89,8 +95,30 @@
     <string>Ctrl+-</string>
    </property>
   </action>
+  <action name="actionPixel_node">
+   <property name="text">
+    <string>Pixel node</string>
+   </property>
+  </action>
+  <action name="actionCost_graph">
+   <property name="text">
+    <string>Cost graph</string>
+   </property>
+  </action>
+  <action name="actionPath_tree">
+   <property name="text">
+    <string>Path tree</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>ImgDisp</class>
+   <extends>QLabel</extends>
+   <header>imgdisp.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

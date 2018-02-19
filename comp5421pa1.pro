@@ -26,11 +26,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    image.cpp
+    image.cpp \
+    imgdisp.cpp \
+    fibheap.cpp \
+    shortest.cpp
 
 HEADERS += \
         mainwindow.h \
-    image.h
+    image.h \
+    imgdisp.h \
+    fibheap.h \
+    shortest.h
 
 FORMS += \
         mainwindow.ui

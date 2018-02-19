@@ -49,7 +49,7 @@ public:
      virtual int  operator ==(FibHeapNode& RHS);
      virtual int  operator <(FibHeapNode& RHS);
 
-     virtual void Print();
+//     virtual void Print();
 };
 
 //========================================================================
@@ -89,7 +89,7 @@ public:
      long GetNumTrees() { return NumTrees; };
      long GetNumMarkedNodes() { return NumMarkedNodes; };
 
-     void Print(FibHeapNode *Tree = NULL, FibHeapNode *theParent=NULL);
+//     void Print(FibHeapNode *Tree = NULL, FibHeapNode *theParent=NULL);
 
 private:
 
