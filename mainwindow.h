@@ -23,6 +23,7 @@ public slots:
     void pixel_node();
     void cost_graph();
     void path_tree();
+    void seed_snap();
 
 private:
     Ui::MainWindow *ui;

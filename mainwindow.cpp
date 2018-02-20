@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionPixel_node, &QAction::triggered, this, &MainWindow::pixel_node);
     connect(ui->actionCost_graph, &QAction::triggered, this, &MainWindow::cost_graph);
     connect(ui->actionPath_tree, &QAction::triggered, this, &MainWindow::path_tree);
+    connect(ui->actionSeed_snap, &QAction::triggered, this, &MainWindow::seed_snap);
 }
 
 MainWindow::~MainWindow()
@@ -54,4 +55,8 @@ void MainWindow::cost_graph() {
 
 void MainWindow::path_tree() {
     image->show_path_tree();
+}
+
+void MainWindow::seed_snap() {
+    image->seed_snap();
 }

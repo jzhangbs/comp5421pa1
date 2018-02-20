@@ -42,7 +42,7 @@
      <x>0</x>
      <y>0</y>
      <width>666</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -66,6 +66,8 @@
    <addaction name="actionPixel_node"/>
    <addaction name="actionCost_graph"/>
    <addaction name="actionPath_tree"/>
+   <addaction name="separator"/>
+   <addaction name="actionSeed_snap"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -111,6 +113,20 @@
   <action name="actionPath_tree">
    <property name="text">
     <string>Path tree</string>
+   </property>
+  </action>
+  <action name="actionSeed_snap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="Check"/>
+   </property>
+   <property name="text">
+    <string>Seed snap</string>
+   </property>
+   <property name="toolTip">
+    <string>Seed snap</string>
    </property>
   </action>
  </widget>
