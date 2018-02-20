@@ -34,15 +34,15 @@ void MainWindow::openImg()
                                              tr("Open Image"), "",
                                              tr("Image (*.bmp;*.jpg;*.png);;All Files (*)"));
     if (f.isNull()) return;
-    image->open(f.toStdString());
+    image->act_open(f.toStdString());
 }
 
 void MainWindow::zoom_in() {
-    image->zoom_in();
+    image->act_zoom_in();
 }
 
 void MainWindow::zoom_out() {
-    image->zoom_out();
+    image->act_zoom_out();
 }
 
 void MainWindow::pixel_node() {
@@ -59,4 +59,11 @@ void MainWindow::path_tree() {
 
 void MainWindow::seed_snap() {
     image->seed_snap();
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+    switch (event->key()) {
+    case Qt::Key_Escape:
+        image->act_del_seed(); break;
+    };
 }

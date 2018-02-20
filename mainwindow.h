@@ -27,6 +27,9 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
+
+protected:
+    void keyPressEvent(QKeyEvent*) override;
 };
 
 extern Image *image;

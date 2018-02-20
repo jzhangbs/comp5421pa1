@@ -44,16 +44,16 @@ public:
     Image();
     ~Image();
 
-    void open(const std::string&);
-    void zoom_in();
-    void zoom_out();
+    void act_open(const std::string&);
+    void act_zoom_in();
+    void act_zoom_out();
     void show_img();
     void show_pixel_node();
     void show_cost_graph();
     void show_path_tree();
-    void show_min_path(int, int);
-    void show_stored(cv::Mat, Contours&);
-    void show_pending(cv::Mat, int, int);
+    void show_min_path(int=-1, int=-1);
+    void draw_stored(cv::Mat, Contours&);
+    void draw_pending(cv::Mat, int, int);
     int h();
     int hs();
     int w();
@@ -65,10 +65,10 @@ public:
     void get_path_tree(int, int);
     cv::Point raw_to_real(int, int);
     cv::Point real_to_raw(int, int);
-    void del_seed();
-    void start_contour(int, int);
-    void add_interm(int, int);
-    void complete_contour();
+    void act_del_seed();
+    void act_start_contour(int, int);
+    void act_add_interm(int, int);
+    void act_complete_contour();
     bool is_finish_contour(int, int);
     cv::Point get_start_seed();
     void seed_snap();

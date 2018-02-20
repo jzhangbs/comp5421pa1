@@ -26,7 +26,7 @@ Image::~Image() {
     if (pred != nullptr) delete[] pred;
 }
 
-void Image::open(const std::string & filename) {
+void Image::act_open(const std::string & filename) {
     img = cv::imread(filename);
     cv::cvtColor(img, img, CV_BGR2RGB);
     scale = 1.;
@@ -43,62 +43,65 @@ void Image::open(const std::string & filename) {
 void Image::show_img() {
     if (!has_data) return;
     mode = IMG;
-    cv::Mat img_draw;
-    if (scale != 1.) {
-        cv::resize(img, img_draw,
-                   cv::Size(int(scale*w()), int(scale*h())),
-                   scale, scale, cv::INTER_CUBIC);
-    }
-    else {
-        img_draw = img;
-    }
-    // draw contours
-    QPixmap pixmap = QPixmap::fromImage(
-                QImage(img_draw.data,
-                       img_draw.cols,
-                       img_draw.rows,
-                       img_draw.step,
-                       QImage::Format_RGB888));
-    label->setPixmap(pixmap);
+//    cv::Mat img_draw;
+//    if (scale != 1.) {
+//        cv::resize(img, img_draw,
+//                   cv::Size(int(scale*w()), int(scale*h())),
+//                   scale, scale, cv::INTER_CUBIC);
+//    }
+//    else {
+//        img_draw = img;
+//    }
+//    QPixmap pixmap = QPixmap::fromImage(
+//                QImage(img_draw.data,
+//                       img_draw.cols,
+//                       img_draw.rows,
+//                       img_draw.step,
+//                       QImage::Format_RGB888));
+//    label->setPixmap(pixmap);
+    show_min_path();
 }
 
 void Image::show_pixel_node() {
     if (!has_data) return;
     mode = PIX;
-    QPixmap pixmap = QPixmap::fromImage(
-                QImage(pixel_node.data,
-                       pixel_node.cols,
-                       pixel_node.rows,
-                       pixel_node.step,
-                       QImage::Format_RGB888));
-    label->setPixmap(pixmap);
+//    QPixmap pixmap = QPixmap::fromImage(
+//                QImage(pixel_node.data,
+//                       pixel_node.cols,
+//                       pixel_node.rows,
+//                       pixel_node.step,
+//                       QImage::Format_RGB888));
+//    label->setPixmap(pixmap);
+    show_min_path();
 }
 
 void Image::show_cost_graph() {
     if (!has_data) return;
     mode = COST;
-    QPixmap pixmap = QPixmap::fromImage(
-                QImage(cost_graph.data,
-                       cost_graph.cols,
-                       cost_graph.rows,
-                       cost_graph.step,
-                       QImage::Format_RGB888));
-    label->setPixmap(pixmap);
+//    QPixmap pixmap = QPixmap::fromImage(
+//                QImage(cost_graph.data,
+//                       cost_graph.cols,
+//                       cost_graph.rows,
+//                       cost_graph.step,
+//                       QImage::Format_RGB888));
+//    label->setPixmap(pixmap);
+    show_min_path();
 }
 
 void Image::show_path_tree() {
     if (!has_data || !has_seed) return;
     mode = PATH;
-    QPixmap pixmap = QPixmap::fromImage(
-                QImage(path_tree.data,
-                       path_tree.cols,
-                       path_tree.rows,
-                       path_tree.step,
-                       QImage::Format_RGB888));
-    label->setPixmap(pixmap);
+//    QPixmap pixmap = QPixmap::fromImage(
+//                QImage(path_tree.data,
+//                       path_tree.cols,
+//                       path_tree.rows,
+//                       path_tree.step,
+//                       QImage::Format_RGB888));
+//    label->setPixmap(pixmap);
+    show_min_path();
 }
 
-void Image::show_stored(cv::Mat img_draw,
+void Image::draw_stored(cv::Mat img_draw,
                         Contours& contours) {
 
     Contours::iterator i;
@@ -122,7 +125,7 @@ void Image::show_stored(cv::Mat img_draw,
     }
 }
 
-void Image::show_pending(cv::Mat img_draw,
+void Image::draw_pending(cv::Mat img_draw,
                          int x, int y) {
 
     cv::Point ptmp = raw_to_real(x, y);
@@ -161,7 +164,7 @@ void Image::show_pending(cv::Mat img_draw,
 }
 
 void Image::show_min_path(int x, int y) {
-    if (!has_data || !has_seed) return;
+    if (!has_data) return;
 
     cv::Mat img_draw;
     switch (mode) {
@@ -178,9 +181,9 @@ void Image::show_min_path(int x, int y) {
         img_draw = path_tree.clone(); break;
     }
 
-    show_stored(img_draw, fixed);
-    show_stored(img_draw, active);
-    show_pending(img_draw, x, y);
+    draw_stored(img_draw, fixed);
+    draw_stored(img_draw, active);
+    if (x!=-1) draw_pending(img_draw, x, y);
 
     QPixmap pixmap = QPixmap::fromImage(
                 QImage(img_draw.data,
@@ -191,13 +194,13 @@ void Image::show_min_path(int x, int y) {
     label->setPixmap(pixmap);
 }
 
-void Image::zoom_in() {
+void Image::act_zoom_in() {
     if (!has_data) return;
     scale += .2;
     show_img();
 }
 
-void Image::zoom_out() {
+void Image::act_zoom_out() {
     if (!has_data) return;
     scale -= .2;
     show_img();
@@ -323,15 +326,33 @@ void Image::get_path_tree(int x, int y) {
             path_tree.ptr<uchar>(3*i+1+di[p], 3*j+1+dj[p])[1] = 255;
         }
 
-    if (mode == PATH)
-        show_path_tree();
+//    if (mode == PATH)
+//        show_path_tree();
 }
 
-void Image::del_seed() {
-
+void Image::act_del_seed() {
+    if (!has_data) return;
+    if (!has_seed && fixed.size()==0) return;
+    if (has_seed) {
+        if (active.size()==0) {
+            has_seed = false;
+        }
+        else if (active.size()==1) {
+            seed_x = start_seed_x;
+            seed_y = start_seed_y;
+        }
+        else if (active.size()>1){
+            seed_x = (active.rbegin()+1)->begin()->x;
+            seed_y = (active.rbegin()+1)->begin()->y;
+        }
+    }
+    else {
+        fixed.pop_back();
+    }
+    show_min_path();
 }
 
-void Image::start_contour(int x, int y) {
+void Image::act_start_contour(int x, int y) {
     image->has_seed = true;
 
     if(this->seed_snap_) clip(x, y);
@@ -341,9 +362,11 @@ void Image::start_contour(int x, int y) {
     start_seed_y = ptmp.y;
 
     get_path_tree(x, y);
+
+    show_min_path();
 }
 
-void Image::add_interm(int x, int y) {
+void Image::act_add_interm(int x, int y) {
     cv::Point ptmp = raw_to_real(x, y);
     int curr_x = ptmp.x;
     int curr_y = ptmp.y;
@@ -361,9 +384,11 @@ void Image::add_interm(int x, int y) {
     active.push_back(new_path);
 
     get_path_tree(x, y);
+
+    show_min_path();
 }
 
-void Image::complete_contour() {
+void Image::act_complete_contour() {
     Contours::iterator i;
     Contour::reverse_iterator j;
 
@@ -393,13 +418,15 @@ void Image::complete_contour() {
     active.erase(active.begin(), active.end());
 
     image->has_seed = false;
+
+    show_min_path();
 }
 
 bool Image::is_finish_contour(int x, int y) {
     cv::Point start_seed = get_start_seed();
     cv::Point ptmp = real_to_raw(start_seed.x, start_seed.y);
     double d = cv::norm(ptmp-cv::Point(x,y));
-    return d < 5.;
+    return d < 10.;
 }
 
 cv::Point Image::get_start_seed() {

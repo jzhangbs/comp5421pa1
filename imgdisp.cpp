@@ -9,13 +9,13 @@ void ImgDisp::mousePressEvent(QMouseEvent *event) {
     if (event->x() >= pixmap()->width() ||
             event->y() >= pixmap()->height()) return;
     if (!image->has_seed) {
-        image->start_contour(event->y(), event->x());
+        image->act_start_contour(event->y(), event->x());
     }
     else if (!image->is_finish_contour(event->y(), event->x())) {
-        image->add_interm(event->y(), event->x());
+        image->act_add_interm(event->y(), event->x());
     }
     else {
-        image->complete_contour();
+        image->act_complete_contour();
     }
 }
 
@@ -29,7 +29,7 @@ void ImgDisp::mouseMoveEvent(QMouseEvent *event) {
 void ImgDisp::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
     case Qt::Key_Escape:
-        image->del_seed(); break;
+        image->act_del_seed(); break;
     };
 }
 
