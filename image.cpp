@@ -309,13 +309,13 @@ cv::Point Image::real_to_raw(int x, int y) {
     return p;
 }
 
-void Image::get_path_tree(int x, int y) {
+void Image::get_path_tree(int x, int y, bool is_raw) {
     if (pred != nullptr) delete[] pred;
     pred = new int[h()*w()];
 
     cv::Point ptmp = raw_to_real(x, y);
-    seed_x = ptmp.x;
-    seed_y = ptmp.y;
+    seed_x = is_raw? ptmp.x : x;
+    seed_y = is_raw? ptmp.y : y;
 
     shortest(adj, h(), w(), seed_x, seed_y, pred);
 
@@ -340,12 +340,16 @@ void Image::act_del_seed() {
             has_seed = false;
         }
         else if (active.size()==1) {
-            seed_x = start_seed_x;
-            seed_y = start_seed_y;
+            get_path_tree(start_seed_x, start_seed_y, false);
+            active.pop_back();
         }
-        else if (active.size()>1){
-            seed_x = (active.rbegin()+1)->begin()->x;
-            seed_y = (active.rbegin()+1)->begin()->y;
+        else if (active.size()>1) {
+            get_path_tree(
+                        (active.rbegin()+1)->begin()->x,
+                        (active.rbegin()+1)->begin()->y,
+                        false
+                        );
+            active.pop_back();
         }
     }
     else {

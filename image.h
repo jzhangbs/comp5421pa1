@@ -63,7 +63,7 @@ public:
     void get_edges();
     void get_pixel_node();
     void get_cost_graph();
-    void get_path_tree(int, int);
+    void get_path_tree(int, int, bool=true);
     cv::Point raw_to_real(int, int);
     cv::Point real_to_raw(int, int);
     void act_del_seed();
