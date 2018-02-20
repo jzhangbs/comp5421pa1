@@ -12,8 +12,8 @@ using namespace std;
 #define I3(x, y, z) ((x)*w*8+(y)*8+(z))
 #define I2(x, y) ((x)*w+(y))
 
-int dx[] = {-1, -1, 0, 1, 1, 1, 0, -1};
-int dy[] = {0, 1, 1, 1, 0, -1, -1, -1};
+int di[] = {-1, -1, 0, 1, 1, 1, 0, -1};
+int dj[] = {0, 1, 1, 1, 0, -1, -1, -1};
 
 class Pixel {
 
@@ -112,8 +112,8 @@ void shortest(double adj[], int h, int w, int seed_x, int seed_y, int pred[]) {
         HeapNode *p_curr = ((HeapNode*) heap.ExtractMin());
 
         for (int i = 0; i < 8; i++) {
-            int new_x = p_curr->key.x + dx[i];
-            int new_y = p_curr->key.y + dy[i];
+            int new_x = p_curr->key.x + di[i];
+            int new_y = p_curr->key.y + dj[i];
             if (new_x < 0 || new_x >= h || new_y < 0 || new_y >= w || node[I2(new_x,new_y)].key.status == EXPANDED)
                 continue;
             if (node[I2(new_x,new_y)].key.status == ACTIVE 

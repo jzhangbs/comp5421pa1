@@ -5,6 +5,7 @@
 
 #include <QLabel>
 #include <QMouseEvent>
+#include <QKeyEvent>
 
 class ImgDisp: public QLabel {
 
@@ -16,7 +17,7 @@ public:
 protected:
     void mousePressEvent(QMouseEvent*) override;
     void mouseMoveEvent(QMouseEvent*) override;
-
+    void keyPressEvent(QKeyEvent*) override;
 };
 
 extern Image *image;

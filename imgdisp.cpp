@@ -19,6 +19,13 @@ void ImgDisp::mouseMoveEvent(QMouseEvent *event) {
     image->show_min_path(event->y(), event->x());
 }
 
+void ImgDisp::keyPressEvent(QKeyEvent *event) {
+    switch (event->key()) {
+    case Qt::Key_Escape:
+        image->del_seed(); break;
+    };
+}
+
 ImgDisp::ImgDisp(QWidget *parent)
     :QLabel(parent) {
 
