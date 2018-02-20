@@ -127,8 +127,8 @@ void Image::show_pending(cv::Mat img_draw,
     y = ptmp.y;
 
     if (is_finish_contour(x, y)) {
-        x = active.begin()->begin()->x;
-        y = active.begin()->begin()->y;
+        x = get_start_seed().x;
+        y = get_start_seed().y;
     }
 
     int curr_x = x;
@@ -337,12 +337,15 @@ void Image::add_interm(int x, int y) {
     cv::Point ptmp = raw_to_real(x, y);
     int curr_x = ptmp.x;
     int curr_y = ptmp.y;
+    int next_x, next_y;
 
     Contour new_path;
     while (curr_x != seed_x || curr_y != seed_y) {
         new_path.push_back(cv::Point(curr_x, curr_y));
-        curr_x = curr_x + di[pred[I2(curr_x, curr_y)]];
-        curr_y = curr_y + dj[pred[I2(curr_x, curr_y)]];
+        next_x = curr_x + di[pred[I2(curr_x, curr_y)]];
+        next_y = curr_y + dj[pred[I2(curr_x, curr_y)]];
+        curr_x = next_x;
+        curr_y = next_y;
     }
     active.push_back(new_path);
 
@@ -350,17 +353,18 @@ void Image::add_interm(int x, int y) {
 }
 
 void Image::complete_contour() {
-    cv::Point start_seed = active.size()==0?
-                cv::Point(seed_x, seed_y) :
-                *active.begin()->begin();
+    cv::Point start_seed = get_start_seed();
     int curr_x = start_seed.x;
     int curr_y = start_seed.y;
+    int next_x, next_y;
 
     Contour new_path;
     while (curr_x != seed_x || curr_y != seed_y) {
         new_path.push_back(cv::Point(curr_x, curr_y));
-        curr_x = curr_x + di[pred[I2(curr_x, curr_y)]];
-        curr_y = curr_y + dj[pred[I2(curr_x, curr_y)]];
+        next_x = curr_x + di[pred[I2(curr_x, curr_y)]];
+        next_y = curr_y + dj[pred[I2(curr_x, curr_y)]];
+        curr_x = next_x;
+        curr_y = next_y;
     }
     active.push_back(new_path);
 
@@ -374,14 +378,20 @@ void Image::complete_contour() {
     if (new_path.size() >= 3)
         fixed.push_back(new_path);
 
+    active.erase(active.begin(), active.end());
+
     image->has_seed = false;
 }
 
 bool Image::is_finish_contour(int x, int y) {
-    cv::Point start_seed = active.size()==0?
-                cv::Point(seed_x, seed_y) :
-                *active.begin()->begin();
+    cv::Point start_seed = get_start_seed();
     cv::Point ptmp = real_to_raw(start_seed.x, start_seed.y);
     double d = cv::norm(ptmp-cv::Point(x,y));
-    return d < 3.;
+    return d < 5.;
+}
+
+cv::Point Image::get_start_seed() {
+    return active.size()==0?
+                cv::Point(seed_x, seed_y) :
+                *active.begin()->begin();
 }

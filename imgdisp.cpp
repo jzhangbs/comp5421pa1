@@ -4,7 +4,7 @@
 #include <QtCore>
 
 void ImgDisp::mousePressEvent(QMouseEvent *event) {
-//    qDebug("%d %d", event->x(), event->y());
+    qDebug("%d %d", event->x(), event->y());
     if (!image->has_data) return;
     if (event->x() >= pixmap()->width() ||
             event->y() >= pixmap()->height()) return;

@@ -65,6 +65,7 @@ public:
     void add_interm(int, int);
     void complete_contour();
     bool is_finish_contour(int, int);
+    cv::Point get_start_seed();
 };
 
 extern Image *image;
