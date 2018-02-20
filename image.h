@@ -27,6 +27,7 @@ public:
     cv::Mat pixel_node;
     cv::Mat cost_graph;
     cv::Mat path_tree;
+    cv::Mat grey_img;
     double scale;
     QLabel *label;
     double *adj;

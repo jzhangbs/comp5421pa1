@@ -28,7 +28,9 @@ Image::~Image() {
 
 void Image::act_open(const std::string & filename) {
     img = cv::imread(filename);
+    cv::cvtColor(img,grey_img,CV_BGR2GRAY);
     cv::cvtColor(img, img, CV_BGR2RGB);
+
     scale = 1.;
     has_data = true;
     mode = IMG;
@@ -448,12 +450,12 @@ Gradient* Image::get_gradient(int width, int height) {
         //gradient[y]=new complex<double>[width];
         for (int x = 1; x < width - 1; x++) {
             (*gradient)[y][x] = std::complex<double>
-                (img.at<double>(y-1,x+1) * 1.0 + img.at<double>(y,x+1) * 2.0
-                    + img.at<double>(y+1,x+1) * 1.0 - img.at<double>(y-1,x-1) * 1.0
-                    - img.at<double>(x-1,y) * 2.0 - img.at<double>(x-1,y+1) * 1.0,
-                    img.at<double>(y+1,x-1) * 1.0 + img.at<double>(y+1,x) * 2.0
-                    + img.at<double>(y+1,x+1) * 1.0 - img.at<double>(y-1,x-1) * 1.0
-                    - img.at<double>(y-1,x) * 2.0 - img.at<double>(y-1,x+1) * 1.0);
+                (grey_img.at<u_char>(y-1,x+1) * 1.0 + grey_img.at<u_char>(y,x+1) * 2.0
+                    + grey_img.at<u_char>(y+1,x+1) * 1.0 - grey_img.at<u_char>(y-1,x-1) * 1.0
+                    - grey_img.at<u_char>(x-1,y) * 2.0 - grey_img.at<u_char>(x-1,y+1) * 1.0,
+                    grey_img.at<u_char>(y+1,x-1) * 1.0 + grey_img.at<u_char>(y+1,x) * 2.0
+                    + grey_img.at<u_char>(y+1,x+1) * 1.0 - grey_img.at<u_char>(y-1,x-1) * 1.0
+                    - grey_img.at<u_char>(y-1,x) * 2.0 - grey_img.at<u_char>(y-1,x+1) * 1.0);
         }
     }
     return gradient;
