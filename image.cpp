@@ -333,7 +333,13 @@ void Image::del_seed() {
 
 void Image::start_contour(int x, int y) {
     image->has_seed = true;
+
     if(this->seed_snap_) clip(x, y);
+
+    cv::Point ptmp = raw_to_real(x, y);
+    start_seed_x = ptmp.x;
+    start_seed_y = ptmp.y;
+
     get_path_tree(x, y);
 }
 
@@ -358,6 +364,9 @@ void Image::add_interm(int x, int y) {
 }
 
 void Image::complete_contour() {
+    Contours::iterator i;
+    Contour::reverse_iterator j;
+
     cv::Point start_seed = get_start_seed();
     int curr_x = start_seed.x;
     int curr_y = start_seed.y;
@@ -373,11 +382,9 @@ void Image::complete_contour() {
     }
     active.push_back(new_path);
 
-    Contours::iterator i;
-    Contour::iterator j;
     new_path.erase(new_path.begin(), new_path.end());
     for (i=active.begin(); i!=active.end(); ++i)
-        for (j=i->begin(); j!=i->end(); ++j) {
+        for (j=i->rbegin(); j!=i->rend(); ++j) {
             new_path.push_back(*j);
         }
     if (new_path.size() >= 3)
@@ -396,9 +403,7 @@ bool Image::is_finish_contour(int x, int y) {
 }
 
 cv::Point Image::get_start_seed() {
-    return active.size()==0?
-                cv::Point(seed_x, seed_y) :
-                *active.begin()->begin();
+    return cv::Point(start_seed_x, start_seed_y);
 }
 
 void Image::seed_snap(){

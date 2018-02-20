@@ -32,6 +32,8 @@ public:
     double *adj;
     int seed_x;
     int seed_y;
+    int start_seed_x;
+    int start_seed_y;
     int mode;
     int *pred;
     Contours fixed;
