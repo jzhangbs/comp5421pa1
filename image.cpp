@@ -91,7 +91,7 @@ void Image::show_cost_graph() {
 }
 
 void Image::show_path_tree() {
-    if (!has_data || !has_seed) return;
+    if (!has_data) return;
     mode = PATH;
 //    QPixmap pixmap = QPixmap::fromImage(
 //                QImage(path_tree.data,
@@ -361,22 +361,22 @@ void Image::act_del_seed() {
 void Image::act_start_contour(int x, int y) {
     image->has_seed = true;
 
-    if(this->seed_snap_) clip(x, y);
-
     cv::Point ptmp = raw_to_real(x, y);
+    if(this->seed_snap_) clip(ptmp.x, ptmp.y);
     start_seed_x = ptmp.x;
     start_seed_y = ptmp.y;
 
-    get_path_tree(x, y);
+    get_path_tree(ptmp.x, ptmp.y, false);
 
     show_min_path();
 }
 
 void Image::act_add_interm(int x, int y) {
     cv::Point ptmp = raw_to_real(x, y);
+    if(this->seed_snap_) clip(ptmp.x, ptmp.y);
     int curr_x = ptmp.x;
     int curr_y = ptmp.y;
-    if(this->seed_snap_) clip(curr_x, curr_y);
+
     int next_x, next_y;
 
     Contour new_path;
@@ -389,7 +389,7 @@ void Image::act_add_interm(int x, int y) {
     }
     active.push_back(new_path);
 
-    get_path_tree(x, y);
+    get_path_tree(ptmp.x, ptmp.y, false);
 
     show_min_path();
 }
@@ -454,12 +454,12 @@ Gradient* Image::get_gradient(int width, int height) {
         //gradient[y]=new complex<double>[width];
         for (int x = 1; x < width - 1; x++) {
             (*gradient)[y][x] = std::complex<double>
-                (grey_img.at<u_char>(y-1,x+1) * 1.0 + grey_img.at<u_char>(y,x+1) * 2.0
-                    + grey_img.at<u_char>(y+1,x+1) * 1.0 - grey_img.at<u_char>(y-1,x-1) * 1.0
-                    - grey_img.at<u_char>(x-1,y) * 2.0 - grey_img.at<u_char>(x-1,y+1) * 1.0,
-                    grey_img.at<u_char>(y+1,x-1) * 1.0 + grey_img.at<u_char>(y+1,x) * 2.0
-                    + grey_img.at<u_char>(y+1,x+1) * 1.0 - grey_img.at<u_char>(y-1,x-1) * 1.0
-                    - grey_img.at<u_char>(y-1,x) * 2.0 - grey_img.at<u_char>(y-1,x+1) * 1.0);
+                (grey_img.at<uchar>(y-1,x+1) * 1.0 + grey_img.at<uchar>(y,x+1) * 2.0
+                    + grey_img.at<uchar>(y+1,x+1) * 1.0 - grey_img.at<uchar>(y-1,x-1) * 1.0
+                    - grey_img.at<uchar>(y,x-1) * 2.0 - grey_img.at<uchar>(y+1,x-1) * 1.0,
+                    grey_img.at<uchar>(y+1,x-1) * 1.0 + grey_img.at<uchar>(y+1,x) * 2.0
+                    + grey_img.at<uchar>(y+1,x+1) * 1.0 - grey_img.at<uchar>(y-1,x-1) * 1.0
+                    - grey_img.at<uchar>(y-1,x) * 2.0 - grey_img.at<uchar>(y-1,x+1) * 1.0);
         }
     }
     return gradient;
