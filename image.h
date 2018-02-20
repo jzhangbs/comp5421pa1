@@ -16,6 +16,7 @@
 
 typedef std::vector<std::vector<cv::Point>> Contours;
 typedef std::vector<cv::Point> Contour;
+typedef std::vector<std::vector<std::complex<double>>> Gradient;
 
 class Image
 {
@@ -35,6 +36,8 @@ public:
     int *pred;
     Contours fixed;
     Contours active;
+    bool seed_snap_;
+    Gradient* gradient;
 
     Image();
     ~Image();
@@ -66,6 +69,9 @@ public:
     void complete_contour();
     bool is_finish_contour(int, int);
     cv::Point get_start_seed();
+    void seed_snap();
+    Gradient* get_gradient(int, int);
+    void clip(int&, int&);
 };
 
 extern Image *image;

@@ -6,6 +6,7 @@
 #include <highgui.hpp>
 
 #include <cmath>
+#include <complex>
 
 #define I3(i,j,k) ((i)*w()*8+(j)*8+(k))
 #define I2(i,j) ((i)*w()+(j))
@@ -15,7 +16,9 @@ Image::Image() {
     has_seed = false;
     adj = nullptr;
     pred = nullptr;
+    gradient = nullptr;
     mode = IMG;
+    seed_snap_=0;
 }
 
 Image::~Image() {
@@ -330,6 +333,7 @@ void Image::del_seed() {
 
 void Image::start_contour(int x, int y) {
     image->has_seed = true;
+    if(this->seed_snap_) clip(x, y);
     get_path_tree(x, y);
 }
 
@@ -337,6 +341,7 @@ void Image::add_interm(int x, int y) {
     cv::Point ptmp = raw_to_real(x, y);
     int curr_x = ptmp.x;
     int curr_y = ptmp.y;
+    if(this->seed_snap_) clip(curr_x, curr_y);
     int next_x, next_y;
 
     Contour new_path;
@@ -394,4 +399,57 @@ cv::Point Image::get_start_seed() {
     return active.size()==0?
                 cv::Point(seed_x, seed_y) :
                 *active.begin()->begin();
+}
+
+void Image::seed_snap(){
+    seed_snap_=!seed_snap_;
+    if(seed_snap_){
+        if(this->gradient) delete gradient;
+        gradient=get_gradient(img.cols,img.rows);
+
+    }
+}
+
+Gradient* Image::get_gradient(int width, int height) {
+    Gradient* gradient = new Gradient(height,std::vector<std::complex<double>>(width,std::complex<double>(0,0)));
+    for (int y = 1; y < height - 1; y++) {
+        //gradient[y]=new complex<double>[width];
+        for (int x = 1; x < width - 1; x++) {
+            (*gradient)[y][x] = std::complex<double>
+                (img.at<double>(y-1,x+1) * 1.0 + img.at<double>(y,x+1) * 2.0
+                    + img.at<double>(y+1,x+1) * 1.0 - img.at<double>(y-1,x-1) * 1.0
+                    - img.at<double>(x-1,y) * 2.0 - img.at<double>(x-1,y+1) * 1.0,
+                    img.at<double>(y+1,x-1) * 1.0 + img.at<double>(y+1,x) * 2.0
+                    + img.at<double>(y+1,x+1) * 1.0 - img.at<double>(y-1,x-1) * 1.0
+                    - img.at<double>(y-1,x) * 2.0 - img.at<double>(y-1,x+1) * 1.0);
+        }
+    }
+    return gradient;
+}
+
+void Image::clip(int& x, int& y){
+    for(int i=0; i<10; ++i){
+        for(int j=0; j<10; ++j){
+            if(x+i<img.rows && y+j<img.cols && std::norm(((*gradient)[x+i])[x+j])>40000){
+                x+=i;
+                y+=j;
+                return;
+            }
+            if(x-i>0 && y+j<img.cols && std::norm(((*gradient)[x+i])[x+j])>40000){
+                x-=i;
+                y+=j;
+                return;
+            }
+            if(x+i<img.rows && y-j>0 && std::norm(((*gradient)[x+i])[x+j])>40000){
+                x+=i;
+                y-=j;
+                return;
+            }
+            if(x-i>0 && y-j>0 && std::norm(((*gradient)[x+i])[x+j])>40000){
+                x-=i;
+                y-=j;
+                return;
+            }
+        }
+    }
 }
