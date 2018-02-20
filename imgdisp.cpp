@@ -8,8 +8,15 @@ void ImgDisp::mousePressEvent(QMouseEvent *event) {
     if (!image->has_data) return;
     if (event->x() >= pixmap()->width() ||
             event->y() >= pixmap()->height()) return;
-    image->has_seed = true;
-    image->get_path_tree(event->y(), event->x());
+    if (!image->has_seed) {
+        image->start_contour(event->y(), event->x());
+    }
+    else if (!image->is_finish_contour(event->y(), event->x())) {
+        image->add_interm(event->y(), event->x());
+    }
+    else {
+        image->complete_contour();
+    }
 }
 
 void ImgDisp::mouseMoveEvent(QMouseEvent *event) {

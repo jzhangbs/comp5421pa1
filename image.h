@@ -64,6 +64,7 @@ public:
     void start_contour(int, int);
     void add_interm(int, int);
     void complete_contour();
+    bool is_finish_contour(int, int);
 };
 
 extern Image *image;

@@ -126,6 +126,11 @@ void Image::show_pending(cv::Mat img_draw,
     x = ptmp.x;
     y = ptmp.y;
 
+    if (is_finish_contour(x, y)) {
+        x = active.begin()->begin()->x;
+        y = active.begin()->begin()->y;
+    }
+
     int curr_x = x;
     int curr_y = y;
     int next_x, next_y;
@@ -170,8 +175,8 @@ void Image::show_min_path(int x, int y) {
         img_draw = path_tree.clone(); break;
     }
 
-//    show_stored(img_draw, fixed);
-//    show_stored(img_draw, active);
+    show_stored(img_draw, fixed);
+    show_stored(img_draw, active);
     show_pending(img_draw, x, y);
 
     QPixmap pixmap = QPixmap::fromImage(
@@ -324,13 +329,59 @@ void Image::del_seed() {
 }
 
 void Image::start_contour(int x, int y) {
-
+    image->has_seed = true;
+    get_path_tree(x, y);
 }
 
 void Image::add_interm(int x, int y) {
+    cv::Point ptmp = raw_to_real(x, y);
+    int curr_x = ptmp.x;
+    int curr_y = ptmp.y;
 
+    Contour new_path;
+    while (curr_x != seed_x || curr_y != seed_y) {
+        new_path.push_back(cv::Point(curr_x, curr_y));
+        curr_x = curr_x + di[pred[I2(curr_x, curr_y)]];
+        curr_y = curr_y + dj[pred[I2(curr_x, curr_y)]];
+    }
+    active.push_back(new_path);
+
+    get_path_tree(x, y);
 }
 
 void Image::complete_contour() {
+    cv::Point start_seed = active.size()==0?
+                cv::Point(seed_x, seed_y) :
+                *active.begin()->begin();
+    int curr_x = start_seed.x;
+    int curr_y = start_seed.y;
 
+    Contour new_path;
+    while (curr_x != seed_x || curr_y != seed_y) {
+        new_path.push_back(cv::Point(curr_x, curr_y));
+        curr_x = curr_x + di[pred[I2(curr_x, curr_y)]];
+        curr_y = curr_y + dj[pred[I2(curr_x, curr_y)]];
+    }
+    active.push_back(new_path);
+
+    Contours::iterator i;
+    Contour::iterator j;
+    new_path.erase(new_path.begin(), new_path.end());
+    for (i=active.begin(); i!=active.end(); ++i)
+        for (j=i->begin(); j!=i->end(); ++j) {
+            new_path.push_back(*j);
+        }
+    if (new_path.size() >= 3)
+        fixed.push_back(new_path);
+
+    image->has_seed = false;
+}
+
+bool Image::is_finish_contour(int x, int y) {
+    cv::Point start_seed = active.size()==0?
+                cv::Point(seed_x, seed_y) :
+                *active.begin()->begin();
+    cv::Point ptmp = real_to_raw(start_seed.x, start_seed.y);
+    double d = cv::norm(ptmp-cv::Point(x,y));
+    return d < 3.;
 }
