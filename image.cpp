@@ -97,8 +97,8 @@ void Image::show_path_tree() {
 void Image::show_min_path(int x, int y) {
     if (!has_data || !has_seed) return;
 
-    int dx[] = {-1, -1, 0, 1, 1, 1, 0, -1};
-    int dy[] = {0, 1, 1, 1, 0, -1, -1, -1};
+    int di[] = {-1, -1, 0, 1, 1, 1, 0, -1};
+    int dj[] = {0, 1, 1, 1, 0, -1, -1, -1};
 
     cv::Point ptmp = get_raw_pos(x, y);
     x = ptmp.x;
@@ -122,9 +122,9 @@ void Image::show_min_path(int x, int y) {
     int curr_y = y;
     int next_x, next_y;
     int curr_x_s, curr_y_s, next_x_s, next_y_s;
-    while (curr_x != seed_x && curr_y != seed_y) {
-        next_x = curr_x + dx[pred[I2(curr_x, curr_y)]];
-        next_y = curr_y + dy[pred[I2(curr_x, curr_y)]];
+    while (curr_x != seed_x || curr_y != seed_y) {
+        next_x = curr_x + di[pred[I2(curr_x, curr_y)]];
+        next_y = curr_y + dj[pred[I2(curr_x, curr_y)]];
 
         if (mode == PATH ||
                 mode == PIX ||
@@ -236,14 +236,14 @@ void Image::get_pixel_node() {
 }
 
 void Image::get_cost_graph() {
-    int dx[] = {-1, -1, 0, 1, 1, 1, 0, -1};
-    int dy[] = {0, 1, 1, 1, 0, -1, -1, -1};
+    int di[] = {-1, -1, 0, 1, 1, 1, 0, -1};
+    int dj[] = {0, 1, 1, 1, 0, -1, -1, -1};
 
     cost_graph = pixel_node.clone();
     for (int i=0; i<h(); i++)
         for (int j=0; j<w(); j++)
             for (int k=0; k<8; k++) {
-                uchar *p = cost_graph.ptr<uchar>(3*i+1+dx[k], 3*j+1+dy[k]);
+                uchar *p = cost_graph.ptr<uchar>(3*i+1+di[k], 3*j+1+dj[k]);
 //                qDebug("%f", adj[I3(i,j,k)] * 255 / 2.);
                 p[0] = p[1] = p[2] = uchar(adj[I3(i,j,k)] / 2.);
             }
@@ -266,8 +266,8 @@ cv::Point Image::get_raw_pos(int x, int y) {
 }
 
 void Image::get_path_tree(int x, int y) {
-    int dx[] = {-1, -1, 0, 1, 1, 1, 0, -1};
-    int dy[] = {0, 1, 1, 1, 0, -1, -1, -1};
+    int di[] = {-1, -1, 0, 1, 1, 1, 0, -1};
+    int dj[] = {0, 1, 1, 1, 0, -1, -1, -1};
 
     if (pred != nullptr) delete[] pred;
     pred = new int[h()*w()];
@@ -284,7 +284,7 @@ void Image::get_path_tree(int x, int y) {
             if (i == seed_x && j == seed_y) continue;
             path_tree.ptr<uchar>(3*i+1, 3*j+1)[1] = 255;
             int p = pred[I2(i, j)];
-            path_tree.ptr<uchar>(3*i+1+dx[p], 3*j+1+dy[p])[1] = 255;
+            path_tree.ptr<uchar>(3*i+1+di[p], 3*j+1+dj[p])[1] = 255;
         }
 
     if (mode == PATH)
