@@ -24,10 +24,12 @@ public:
     bool has_data;
     bool has_seed;
     cv::Mat img;
+    cv::Mat mask;
     cv::Mat pixel_node;
     cv::Mat cost_graph;
     cv::Mat path_tree;
     cv::Mat grey_img;
+    cv::Mat rendered;
     double scale;
     QLabel *label;
     double *adj;
@@ -52,9 +54,16 @@ public:
     void show_pixel_node();
     void show_cost_graph();
     void show_path_tree();
-    void show_min_path(int=-1, int=-1);
-    void draw_stored(cv::Mat, Contours&);
-    void draw_pending(cv::Mat, int, int);
+    void show_min_path(int=-1, int=-1, bool=true);
+    void draw_stored(Contours&,
+                     cv::Mat,
+                     bool=true,
+                     cv::Scalar=cv::Scalar(255, 0, 0),
+                     int=3);
+    void draw_pending(int, int);
+    void save_with_contour(const std::string&);
+    void save_mask(const std::string&, bool=true);
+    void save_with_alpha(const std::string&);
     int h();
     int hs();
     int w();

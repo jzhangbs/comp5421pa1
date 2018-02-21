@@ -17,12 +17,16 @@ public:
     ~MainWindow();
 
 public slots:
-    void openImg();
+    void open_img();
+    void save_with_contour();
+    void save_with_alpha();
+    void save_mask();
     void zoom_in();
     void zoom_out();
     void pixel_node();
     void cost_graph();
     void path_tree();
+    void image_();
     void seed_snap();
 
 private:

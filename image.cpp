@@ -28,12 +28,16 @@ Image::~Image() {
 
 void Image::act_open(const std::string & filename) {
     img = cv::imread(filename);
+//    qDebug("%d", img.type());
     cv::cvtColor(img,grey_img,CV_BGR2GRAY);
     cv::cvtColor(img, img, CV_BGR2RGB);
 
     scale = 1.;
     has_data = true;
     mode = IMG;
+
+    fixed.erase(fixed.begin(), fixed.end());
+    active.erase(active.begin(), active.end());
 
     get_edges();
     get_pixel_node();
@@ -45,74 +49,45 @@ void Image::act_open(const std::string & filename) {
 void Image::show_img() {
     if (!has_data) return;
     mode = IMG;
-//    cv::Mat img_draw;
-//    if (scale != 1.) {
-//        cv::resize(img, img_draw,
-//                   cv::Size(int(scale*w()), int(scale*h())),
-//                   scale, scale, cv::INTER_CUBIC);
-//    }
-//    else {
-//        img_draw = img;
-//    }
-//    QPixmap pixmap = QPixmap::fromImage(
-//                QImage(img_draw.data,
-//                       img_draw.cols,
-//                       img_draw.rows,
-//                       img_draw.step,
-//                       QImage::Format_RGB888));
-//    label->setPixmap(pixmap);
     show_min_path();
 }
 
 void Image::show_pixel_node() {
     if (!has_data) return;
     mode = PIX;
-//    QPixmap pixmap = QPixmap::fromImage(
-//                QImage(pixel_node.data,
-//                       pixel_node.cols,
-//                       pixel_node.rows,
-//                       pixel_node.step,
-//                       QImage::Format_RGB888));
-//    label->setPixmap(pixmap);
     show_min_path();
 }
 
 void Image::show_cost_graph() {
     if (!has_data) return;
     mode = COST;
-//    QPixmap pixmap = QPixmap::fromImage(
-//                QImage(cost_graph.data,
-//                       cost_graph.cols,
-//                       cost_graph.rows,
-//                       cost_graph.step,
-//                       QImage::Format_RGB888));
-//    label->setPixmap(pixmap);
     show_min_path();
 }
 
 void Image::show_path_tree() {
     if (!has_data) return;
+    if (!has_seed && fixed.size()==0) return;
     mode = PATH;
-//    QPixmap pixmap = QPixmap::fromImage(
-//                QImage(path_tree.data,
-//                       path_tree.cols,
-//                       path_tree.rows,
-//                       path_tree.step,
-//                       QImage::Format_RGB888));
-//    label->setPixmap(pixmap);
     show_min_path();
 }
 
-void Image::draw_stored(cv::Mat img_draw,
-                        Contours& contours) {
+void Image::draw_stored(Contours& contours,
+                        cv::Mat img_draw,
+                        bool do_scale,
+                        cv::Scalar color,
+                        int thickness) {
 
     Contours::iterator i;
     Contour::iterator j;
     for (i=contours.begin(); i!=contours.end(); ++i) {
         if (i->size() < 2) continue;
         for (j=i->begin()+1; j!=i->end(); ++j) {
-            cv::Point ctmp = real_to_raw((j-1)->x, (j-1)->y);
-            cv::Point ntmp = real_to_raw(j->x, j->y);
+            cv::Point ctmp = do_scale?
+                        real_to_raw((j-1)->x, (j-1)->y):
+                        *(j-1);
+            cv::Point ntmp = do_scale?
+                        real_to_raw(j->x, j->y):
+                        *j;
             int curr_x_s = ctmp.x;
             int curr_y_s = ctmp.y;
             int next_x_s = ntmp.x;
@@ -121,14 +96,13 @@ void Image::draw_stored(cv::Mat img_draw,
             cv::line(img_draw,
                      cv::Point(curr_y_s, curr_x_s),
                      cv::Point(next_y_s, next_x_s),
-                     cv::Scalar(255, 0, 0),
-                     5);
+                     color,
+                     thickness);
         }
     }
 }
 
-void Image::draw_pending(cv::Mat img_draw,
-                         int x, int y) {
+void Image::draw_pending(int x, int y) {
 
     cv::Point ptmp = raw_to_real(x, y);
     x = ptmp.x;
@@ -154,46 +128,92 @@ void Image::draw_pending(cv::Mat img_draw,
         next_x_s = ntmp.x;
         next_y_s = ntmp.y;
 
-        cv::line(img_draw,
+        cv::line(rendered,
                  cv::Point(curr_y_s, curr_x_s),
                  cv::Point(next_y_s, next_x_s),
                  cv::Scalar(255, 0, 0),
-                 5);
+                 3);
 
         curr_x = next_x;
         curr_y = next_y;
     }
 }
 
-void Image::show_min_path(int x, int y) {
+void Image::show_min_path(int x, int y, bool do_scale) {
     if (!has_data) return;
 
-    cv::Mat img_draw;
     switch (mode) {
     case IMG:
-        cv::resize(img, img_draw,
+        if (do_scale)
+            cv::resize(img, rendered,
                    cv::Size(ws(), hs()),
                    scale, scale, cv::INTER_CUBIC);
+        else
+            rendered = img.clone();
         break;
     case PIX:
-        img_draw = pixel_node.clone(); break;
+        rendered = pixel_node.clone(); break;
     case COST:
-        img_draw = cost_graph.clone(); break;
+        rendered = cost_graph.clone(); break;
     case PATH:
-        img_draw = path_tree.clone(); break;
+        rendered = path_tree.clone(); break;
     }
 
-    draw_stored(img_draw, fixed);
-    draw_stored(img_draw, active);
-    if (x!=-1) draw_pending(img_draw, x, y);
+    draw_stored(fixed, rendered, do_scale);
+    draw_stored(active, rendered, do_scale);
+    if (x!=-1 && do_scale) draw_pending(x, y);
 
-    QPixmap pixmap = QPixmap::fromImage(
-                QImage(img_draw.data,
-                       img_draw.cols,
-                       img_draw.rows,
-                       img_draw.step,
-                       QImage::Format_RGB888));
-    label->setPixmap(pixmap);
+    if (do_scale) {
+        QPixmap pixmap = QPixmap::fromImage(
+                    QImage(rendered.data,
+                           rendered.cols,
+                           rendered.rows,
+                           rendered.step,
+                           QImage::Format_RGB888));
+        label->setPixmap(pixmap);
+    }
+}
+
+void Image::save_with_contour(const std::string &filename) {
+    show_min_path(-1, -1, false);
+    cv::cvtColor(rendered, rendered, CV_RGB2BGR);
+    cv::imwrite(filename, rendered);
+}
+
+void Image::save_mask(const std::string &filename,
+                      bool do_write) {
+    mask = cv::Mat::zeros(h(), w(), CV_8UC1);
+    draw_stored(fixed, mask, false, cv::Scalar(255), 1);
+
+    cv::copyMakeBorder(mask, mask, 1,1,1,1,
+                       cv::BORDER_CONSTANT, 0);
+    // Floodfill from point (0, 0)
+    cv::Mat im_floodfill = mask.clone();
+    cv::floodFill(im_floodfill,
+                  cv::Point(0,0),
+                  cv::Scalar(255));
+
+    // Invert floodfilled image
+    cv::Mat im_floodfill_inv;
+    cv::bitwise_not(im_floodfill, im_floodfill_inv);
+
+    // Combine the two images to get the foreground.
+    mask = (mask | im_floodfill_inv);
+
+    mask = mask(cv::Rect(1,1, w(),h()));
+
+    if (do_write) cv::imwrite(filename, mask);
+}
+
+void Image::save_with_alpha(const std::string &filename) {
+    save_mask("", false);
+    cv::Mat channels[4];
+    cv::Mat out;
+    cv::split(img, channels);
+    channels[3] = mask;
+    cv::merge(channels, 4, out);
+    cv::cvtColor(out, out, CV_RGBA2BGRA);
+    cv::imwrite(filename, out);
 }
 
 void Image::act_zoom_in() {
@@ -228,7 +248,6 @@ int Image::ws() {
     return int(img.cols * scale);
 }
 
-// TODO: grayscale
 void Image::get_edges() {
     if (adj != nullptr) delete[] adj;
     adj = new double[h()*w()*8];
@@ -327,9 +346,6 @@ void Image::get_path_tree(int x, int y, bool is_raw) {
             int p = pred[I2(i, j)];
             path_tree.ptr<uchar>(3*i+1+di[p], 3*j+1+dj[p])[1] = 255;
         }
-
-//    if (mode == PATH)
-//        show_path_tree();
 }
 
 void Image::act_del_seed() {

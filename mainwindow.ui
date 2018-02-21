@@ -42,7 +42,7 @@
      <x>0</x>
      <y>0</y>
      <width>666</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -50,6 +50,9 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionSave_with_contour"/>
+    <addaction name="actionSave_mask"/>
+    <addaction name="actionSave_with_alpha_channel"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -63,6 +66,7 @@
    <addaction name="actionZoom_in"/>
    <addaction name="actionZoom_out"/>
    <addaction name="separator"/>
+   <addaction name="actionImage"/>
    <addaction name="actionPixel_node"/>
    <addaction name="actionCost_graph"/>
    <addaction name="actionPath_tree"/>
@@ -119,14 +123,43 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset theme="Check"/>
-   </property>
    <property name="text">
     <string>Seed snap</string>
    </property>
    <property name="toolTip">
     <string>Seed snap</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionSave_with_contour">
+   <property name="text">
+    <string>Save with contour</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionSave_mask">
+   <property name="text">
+    <string>Save mask</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="actionSave_with_alpha_channel">
+   <property name="text">
+    <string>Save with alpha channel</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionImage">
+   <property name="text">
+    <string>Image</string>
    </property>
   </action>
  </widget>
