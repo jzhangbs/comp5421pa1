@@ -535,7 +535,7 @@ void Image::clip(int &x, int &y) {
         v[I2(c.x, c.y)] = true;
         if (grad_img.ptr<uchar>(c.x, c.y)[0]) {
             x = c.x; y = c.y;
-            delete v;
+            delete[] v;
             return;
         }
         for (int i=0; i<8; i++) {
@@ -548,5 +548,5 @@ void Image::clip(int &x, int &y) {
             q.push_back(cv::Point(nx, ny));
         }
     }
-    delete v;
+    delete[] v;
 }
