@@ -36,6 +36,7 @@ void Image::act_open(const std::string & filename) {
 
     scale = 1.;
     has_data = true;
+    has_seed = false;
     mode = IMG;
 
     fixed.erase(fixed.begin(), fixed.end());
