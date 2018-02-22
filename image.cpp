@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <complex>
+#include <deque>
 
 #define I3(i,j,k) ((i)*w()*8+(j)*8+(k))
 #define I2(i,j) ((i)*w()+(j))
@@ -24,6 +25,7 @@ Image::Image() {
 Image::~Image() {
     if (adj != nullptr) delete[] adj;
     if (pred != nullptr) delete[] pred;
+    if(this->gradient) delete gradient;
 }
 
 void Image::act_open(const std::string & filename) {
@@ -42,6 +44,9 @@ void Image::act_open(const std::string & filename) {
     get_edges();
     get_pixel_node();
     get_cost_graph();
+
+    if(this->gradient) delete gradient;
+    gradient=get_gradient(img.cols,img.rows);
 
     show_img();
 }
@@ -68,6 +73,13 @@ void Image::show_path_tree() {
     if (!has_data) return;
     if (!has_seed && fixed.size()==0) return;
     mode = PATH;
+    show_min_path();
+}
+
+void Image::show_grad() {
+    if (!has_data) return;
+    if (!seed_snap_) return;
+    mode = GRAD;
     show_min_path();
 }
 
@@ -142,22 +154,27 @@ void Image::draw_pending(int x, int y) {
 void Image::show_min_path(int x, int y, bool do_scale) {
     if (!has_data) return;
 
-    switch (mode) {
-    case IMG:
-        if (do_scale)
+    if (do_scale)
+        switch (mode) {
+        case GRAD:
+            cv::resize(grad_img, rendered,
+                   cv::Size(ws(), hs()),
+                   scale, scale, cv::INTER_CUBIC);
+            break;
+        case IMG:
             cv::resize(img, rendered,
                    cv::Size(ws(), hs()),
                    scale, scale, cv::INTER_CUBIC);
-        else
-            rendered = img.clone();
-        break;
-    case PIX:
-        rendered = pixel_node.clone(); break;
-    case COST:
-        rendered = cost_graph.clone(); break;
-    case PATH:
-        rendered = path_tree.clone(); break;
-    }
+            break;
+        case PIX:
+            rendered = pixel_node.clone(); break;
+        case COST:
+            rendered = cost_graph.clone(); break;
+        case PATH:
+            rendered = path_tree.clone(); break;
+        }
+    else
+        rendered = img.clone();
 
     draw_stored(fixed, rendered, do_scale);
     draw_stored(active, rendered, do_scale);
@@ -219,13 +236,13 @@ void Image::save_with_alpha(const std::string &filename) {
 void Image::act_zoom_in() {
     if (!has_data) return;
     scale += .2;
-    show_img();
+    show_min_path();
 }
 
 void Image::act_zoom_out() {
     if (!has_data) return;
     scale -= .2;
-    show_img();
+    show_min_path();
 }
 
 void Image::set_label(QLabel *_label) {
@@ -300,7 +317,7 @@ void Image::get_cost_graph() {
 
 cv::Point Image::raw_to_real(int x, int y) {
     cv::Point p;
-    if (mode == IMG) {
+    if (mode == IMG || mode == GRAD) {
         p.x = int(x/scale);
         p.y = int(y/scale);
     }
@@ -321,7 +338,7 @@ cv::Point Image::real_to_raw(int x, int y) {
         p.x = x * 3 + 1;
         p.y = y * 3 + 1;
     }
-    else if (mode == IMG) {
+    else if (mode == IMG || mode == GRAD) {
         p.x = int(x * scale);
         p.y = int(y * scale);
     }
@@ -457,15 +474,11 @@ cv::Point Image::get_start_seed() {
 
 void Image::seed_snap(){
     seed_snap_=!seed_snap_;
-    if(seed_snap_){
-        if(this->gradient) delete gradient;
-        gradient=get_gradient(img.cols,img.rows);
-
-    }
 }
 
 Gradient* Image::get_gradient(int width, int height) {
     Gradient* gradient = new Gradient(height,std::vector<std::complex<double>>(width,std::complex<double>(0,0)));
+    grad_img = cv::Mat::zeros(img.size(), CV_8UC3);
     for (int y = 1; y < height - 1; y++) {
         //gradient[y]=new complex<double>[width];
         for (int x = 1; x < width - 1; x++) {
@@ -476,11 +489,15 @@ Gradient* Image::get_gradient(int width, int height) {
                     grey_img.at<uchar>(y+1,x-1) * 1.0 + grey_img.at<uchar>(y+1,x) * 2.0
                     + grey_img.at<uchar>(y+1,x+1) * 1.0 - grey_img.at<uchar>(y-1,x-1) * 1.0
                     - grey_img.at<uchar>(y-1,x) * 2.0 - grey_img.at<uchar>(y-1,x+1) * 1.0);
+            grad_img.ptr<uchar>(y, x)[0] =
+                grad_img.ptr<uchar>(y, x)[1] =
+                grad_img.ptr<uchar>(y, x)[2] =
+                    255 * (std::norm((*gradient)[y][x])>40000);
         }
     }
     return gradient;
 }
-
+/*
 void Image::clip(int& x, int& y){
     for(int i=0; i<10; ++i){
         for(int j=0; j<10; ++j){
@@ -506,4 +523,30 @@ void Image::clip(int& x, int& y){
             }
         }
     }
+}*/
+void Image::clip(int &x, int &y) {
+    std::deque<cv::Point> q;
+    q.push_back(cv::Point(x, y));
+    bool *v = new bool[h()*w()];
+    memset(v, 0, h()*w()*sizeof(bool));
+    while (!q.empty()) {
+        cv::Point c = q[0];
+        q.pop_front();
+        v[I2(c.x, c.y)] = true;
+        if (grad_img.ptr<uchar>(c.x, c.y)[0]) {
+            x = c.x; y = c.y;
+            delete v;
+            return;
+        }
+        for (int i=0; i<8; i++) {
+            int nx = c.x+di[i];
+            int ny = c.y+dj[i];
+            if (nx<0 || nx>=h()) continue;
+            if (ny<0 || ny>=w()) continue;
+            if (v[I2(nx, ny)]) continue;
+            if (cv::norm(real_to_raw(nx, ny)-real_to_raw(x, y)) > 10) continue;
+            q.push_back(cv::Point(nx, ny));
+        }
+    }
+    delete v;
 }

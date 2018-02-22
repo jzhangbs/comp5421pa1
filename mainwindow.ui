@@ -70,6 +70,7 @@
    <addaction name="actionPixel_node"/>
    <addaction name="actionCost_graph"/>
    <addaction name="actionPath_tree"/>
+   <addaction name="actionGradient"/>
    <addaction name="separator"/>
    <addaction name="actionSeed_snap"/>
   </widget>
@@ -160,6 +161,11 @@
   <action name="actionImage">
    <property name="text">
     <string>Image</string>
+   </property>
+  </action>
+  <action name="actionGradient">
+   <property name="text">
+    <string>Gradient</string>
    </property>
   </action>
  </widget>

@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionPath_tree, &QAction::triggered, this, &MainWindow::path_tree);
     connect(ui->actionImage, &QAction::triggered, this, &MainWindow::image_);
     connect(ui->actionSeed_snap, &QAction::triggered, this, &MainWindow::seed_snap);
+    connect(ui->actionGradient, &QAction::triggered, this, &MainWindow::grad);
 }
 
 MainWindow::~MainWindow()
@@ -97,6 +98,10 @@ void MainWindow::image_() {
 
 void MainWindow::seed_snap() {
     image->seed_snap();
+}
+
+void MainWindow::grad() {
+    image->show_grad();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {

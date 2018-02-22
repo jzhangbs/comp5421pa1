@@ -13,6 +13,7 @@
 #define PIX 1
 #define COST 2
 #define PATH 3
+#define GRAD 4
 
 typedef std::vector<std::vector<cv::Point>> Contours;
 typedef std::vector<cv::Point> Contour;
@@ -29,6 +30,7 @@ public:
     cv::Mat cost_graph;
     cv::Mat path_tree;
     cv::Mat grey_img;
+    cv::Mat grad_img;
     cv::Mat rendered;
     double scale;
     QLabel *label;
@@ -54,6 +56,7 @@ public:
     void show_pixel_node();
     void show_cost_graph();
     void show_path_tree();
+    void show_grad();
     void show_min_path(int=-1, int=-1, bool=true);
     void draw_stored(Contours&,
                      cv::Mat,

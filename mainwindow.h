@@ -28,6 +28,7 @@ public slots:
     void path_tree();
     void image_();
     void seed_snap();
+    void grad();
 
 private:
     Ui::MainWindow *ui;
